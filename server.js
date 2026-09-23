@@ -40,7 +40,6 @@ db.serialize(() => {
         value TEXT
     )`);
 
-    // Fecha por defecto si no existe
     db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('event_end', '2026-10-25T23:59:00')`);
 });
 
@@ -52,7 +51,7 @@ app.get('/api/settings/event_date', (req, res) => {
     });
 });
 
-// Reiniciar evento (Cambiar fecha y borrar puntos)
+// Reiniciar evento
 app.post('/api/settings/reset_event', (req, res) => {
     const { new_date } = req.body;
     db.serialize(() => {
@@ -128,6 +127,7 @@ app.post('/api/points', (req, res) => {
     });
 });
 
+// Autenticación de Admin
 app.post('/api/admin-login', (req, res) => {
     const { password } = req.body;
     if (password === 'AstR09#Zet!H') {
@@ -138,4 +138,6 @@ app.post('/api/admin-login', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
+});
