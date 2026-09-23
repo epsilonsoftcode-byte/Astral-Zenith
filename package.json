@@ -1,13 +1,10 @@
-"scripts": {
-  "start": "node server.js"
-}
 {
   "name": "astral-zenith",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Sistema de Ranking Astral Zenith",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
