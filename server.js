@@ -69,40 +69,40 @@ app.post('/api/settings/reset_event', (req, res) => {
 
 app.get('/api/rankings', (req, res) => {
     const query = `
-        SELECT p.id, p.nickname, p.gender, p.in_game_id,
-               COALESCE(SUM(pt.points), 0) as total_points,
-               COALESCE(SUM(CASE WHEN pt.category = 'Battle Royale' THEN pt.points ELSE 0 END), 0) as br_points,
-               COALESCE(SUM(CASE WHEN pt.category = 'Multijugador' THEN pt.points ELSE 0 END), 0) as mj_points
+    SELECT p.id, p.nickname, p.gender, p.in_game_id,
+    COALESCE(SUM(pt.points), 0) as total_points,
+        COALESCE(SUM(CASE WHEN pt.category = 'Battle Royale' THEN pt.points ELSE 0 END), 0) as br_points,
+        COALESCE(SUM(CASE WHEN pt.category = 'Multijugador' THEN pt.points ELSE 0 END), 0) as mj_points
         FROM players p
         LEFT JOIN points pt ON p.id = pt.player_id
         GROUP BY p.id
         ORDER BY total_points DESC
-    `;
-    db.all(query, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
+        `;
+        db.all(query, [], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(rows);
+        });
 });
 
 // CRUD Jugadores
 app.post('/api/players', (req, res) => {
     const { nickname, gender, in_game_id } = req.body;
     db.run(`INSERT INTO players (nickname, gender, in_game_id) VALUES (?, ?, ?)`,
-        [nickname, gender, in_game_id], function(err) {
-            if (err) return res.status(400).json({ error: err.message });
-            io.emit('update_needed');
-            res.json({ id: this.lastID, success: true });
-    });
+           [nickname, gender, in_game_id], function(err) {
+               if (err) return res.status(400).json({ error: err.message });
+               io.emit('update_needed');
+               res.json({ id: this.lastID, success: true });
+           });
 });
 
 app.put('/api/players/:id', (req, res) => {
     const { nickname, gender, in_game_id } = req.body;
     db.run(`UPDATE players SET nickname = ?, gender = ?, in_game_id = ? WHERE id = ?`,
-        [nickname, gender, in_game_id, req.params.id], function(err) {
-            if (err) return res.status(400).json({ error: err.message });
-            io.emit('update_needed');
-            res.json({ success: true });
-    });
+           [nickname, gender, in_game_id, req.params.id], function(err) {
+               if (err) return res.status(400).json({ error: err.message });
+               io.emit('update_needed');
+               res.json({ success: true });
+           });
 });
 
 app.delete('/api/players/:id', (req, res) => {
@@ -120,11 +120,11 @@ app.delete('/api/players/:id', (req, res) => {
 app.post('/api/points', (req, res) => {
     const { player_id, points, category, reason } = req.body;
     db.run(`INSERT INTO points (player_id, points, category, reason) VALUES (?, ?, ?, ?)`,
-        [player_id, points, category, reason], function(err) {
-            if (err) return res.status(400).json({ error: err.message });
-            io.emit('update_needed');
-            res.json({ success: true });
-    });
+           [player_id, points, category, reason], function(err) {
+               if (err) return res.status(400).json({ error: err.message });
+               io.emit('update_needed');
+               res.json({ success: true });
+           });
 });
 
 // Autenticación de Admin
