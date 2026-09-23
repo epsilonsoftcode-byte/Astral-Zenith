@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astral Zenith - Ranking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b0f19;
+            background-image: radial-gradient(circle at center, #1a233a 0%, #0b0f19 100%);
+            color: #e2e8f0;
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+        }
+        h1, h2, h3, .font-orbitron { font-family: 'Orbitron', sans-serif; }
+
+        .neon-box-cyan {
+            border: 1px solid #00f0ff;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2), inset 0 0 10px rgba(0, 240, 255, 0.1);
+            background: rgba(0, 20, 40, 0.6);
+        }
+        .neon-box-purple {
+            border: 1px solid #b026ff;
+            box-shadow: 0 0 10px rgba(176, 38, 255, 0.2), inset 0 0 10px rgba(176, 38, 255, 0.1);
+            background: rgba(20, 0, 40, 0.6);
+        }
+        .text-neon-cyan { color: #00f0ff; text-shadow: 0 0 10px #00f0ff; }
+
+        .table-container { max-height: 300px; overflow-y: auto; }
+        .hidden { display: none !important; }
+
+        /* Estilo específico del contador */
+        .timer-box {
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            background-color: #0a111a;
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body class="p-6">
+
+    <div id="main-view" class="max-w-6xl mx-auto space-y-12">
+        <header class="text-center space-y-2">
+            <h1 class="text-6xl font-black text-neon-cyan tracking-widest">ASTRAL ZENITH</h1>
+            <h2 class="text-2xl font-bold text-gray-400 tracking-widest">RANKING POINTS</h2>
+        </header>
+
+        <section class="neon-box-purple p-6 rounded-xl text-center">
+            <h3 class="text-2xl text-[#b026ff] mb-6">TOP 3 GENERAL</h3>
+            <div id="podio-general" class="flex justify-center items-end gap-4 h-48"></div>
+        </section>
+
+        <section class="neon-box-cyan p-6 rounded-xl">
+            <h3 class="text-xl text-neon-cyan mb-4">TODOS LOS JUGADORES</h3>
+            <div class="table-container">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-[#0b0f19]">
+                        <tr>
+                            <th class="p-2 border-b border-[#00f0ff]">Rank</th>
+                            <th class="p-2 border-b border-[#00f0ff]">Jugador</th>
+                            <th class="p-2 border-b border-[#00f0ff]">Puntos Totales</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-general"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <section class="neon-box-cyan p-6 rounded-xl text-center">
+                <h3 class="text-xl text-neon-cyan mb-4">MÁS PUNTOS EN MULTIJUGADOR</h3>
+                <div id="podio-mj" class="text-lg"></div>
+            </section>
+            <section class="neon-box-cyan p-6 rounded-xl text-center">
+                <h3 class="text-xl text-neon-cyan mb-4">MÁS PUNTOS EN BATTLE ROYALE</h3>
+                <div id="podio-br" class="text-lg"></div>
+            </section>
+        </div>
+
+        <!-- Nuevo Diseño del Contador -->
+        <section class="text-center mt-12 mb-12">
+            <h3 class="text-xl font-bold text-white uppercase tracking-widest mb-6">FINALIZACIÓN DE ACUMULACIÓN DE PUNTOS<br>TERMINA EN:</h3>
+            <div class="flex justify-center flex-wrap gap-4 font-orbitron">
+                <div class="timer-box p-4 rounded-sm flex flex-col items-center justify-center">
+                    <div id="cd-days" class="text-5xl font-bold text-neon-cyan mb-1">00</div>
+                    <div class="text-xs font-bold text-gray-400 tracking-widest">DÍAS</div>
+                </div>
+                <div class="timer-box p-4 rounded-sm flex flex-col items-center justify-center">
+                    <div id="cd-hours" class="text-5xl font-bold text-neon-cyan mb-1">00</div>
+                    <div class="text-xs font-bold text-gray-400 tracking-widest">HORAS</div>
+                </div>
+                <div class="timer-box p-4 rounded-sm flex flex-col items-center justify-center">
+                    <div id="cd-minutes" class="text-5xl font-bold text-neon-cyan mb-1">00</div>
+                    <div class="text-xs font-bold text-gray-400 tracking-widest">MINUTOS</div>
+                </div>
+                <div class="timer-box p-4 rounded-sm flex flex-col items-center justify-center">
+                    <div id="cd-seconds" class="text-5xl font-bold text-neon-cyan mb-1">00</div>
+                    <div class="text-xs font-bold text-gray-400 tracking-widest">SEGUNDOS</div>
+                </div>
+            </div>
+            <div id="cd-target-text" class="mt-6 text-lg text-[#cca3ff] tracking-wide font-bold uppercase font-orbitron">
+                Cargando fecha...
+            </div>
+        </section>
+
+        <section class="neon-box-purple p-6 rounded-xl">
+            <h3 class="text-xl text-[#b026ff] mb-4 text-center">SYSTEM POINT</h3>
+            <table class="w-full text-left">
+                <tbody>
+                    <tr class="border-b border-gray-700"><td class="p-2">Salas Internas</td><td class="p-2 text-right">4 Pts</td></tr>
+                    <tr class="border-b border-gray-700"><td class="p-2">Salas Battle Royale</td><td class="p-2 text-right">2 Pts</td></tr>
+                    <tr class="border-b border-gray-700"><td class="p-2">Scrims Competitivo</td><td class="p-2 text-right">2 Pts</td></tr>
+                    <tr class="border-b border-gray-700"><td class="p-2">Guerra de Clanes (1k pts)</td><td class="p-2 text-right">1 Pts</td></tr>
+                    <tr class="border-b border-gray-700"><td class="p-2">Traer nuevo miembro</td><td class="p-2 text-right">1 Pts</td></tr>
+                    <tr><td class="p-2">5 Asistencias consecutivas</td><td class="p-2 text-right">1 Pts</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <div class="text-center mt-12 pb-12">
+            <button onclick="document.getElementById('modal-login').classList.remove('hidden')" class="border border-gray-600 text-gray-400 hover:text-white hover:border-white px-4 py-2 rounded">Acceso Administrativo</button>
+        </div>
+    </div>
+
+    <!-- Modal Login -->
+    <div id="modal-login" class="hidden fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50">
+        <div class="neon-box-cyan p-8 rounded-xl text-center">
+            <h3 class="text-2xl text-neon-cyan mb-4">ADMIN LOGIN</h3>
+            <input type="password" id="admin-pass" placeholder="Contraseña" class="bg-gray-800 text-white p-2 w-full mb-4 rounded outline-none border border-gray-600 focus:border-[#00f0ff]">
+            <button onclick="checkAdmin()" class="bg-[#00f0ff] text-black font-bold px-6 py-2 rounded w-full">Ingresar</button>
+            <button onclick="document.getElementById('modal-login').classList.add('hidden')" class="mt-4 text-sm text-gray-400">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Panel Admin -->
+    <div id="admin-panel" class="hidden max-w-4xl mx-auto space-y-8 pb-12">
+        <h2 class="text-4xl text-center text-neon-cyan font-black mt-8">PANEL DE CONTROL</h2>
+
+        <!-- Form Gestión Jugadores -->
+        <section class="neon-box-cyan p-6 rounded-xl">
+            <h3 class="text-xl mb-4 text-[#00f0ff]">Gestión de Jugadores</h3>
+            <div class="mb-4">
+                <select id="action-mode" onchange="togglePlayerForm()" class="bg-gray-800 p-2 rounded w-full border border-gray-600">
+                    <option value="add">Agregar Nuevo Jugador</option>
+                    <option value="edit">Editar Jugador Existente</option>
+                    <option value="delete">Eliminar Jugador</option>
+                </select>
+            </div>
+
+            <form id="formJugador" class="flex flex-col md:flex-row gap-4">
+                <select id="select-edit-player" onchange="fillPlayerData()" class="hidden bg-gray-800 p-2 rounded flex-1">
+                    <option value="">Selecciona un jugador...</option>
+                </select>
+                <input type="text" id="p-nick" placeholder="Nickname" required class="bg-gray-800 p-2 rounded flex-1">
+                <select id="p-gen" class="bg-gray-800 p-2 rounded w-32"><option>Hombre</option><option>Mujer</option></select>
+                <input type="text" id="p-id" placeholder="ID Juego" required class="bg-gray-800 p-2 rounded flex-1">
+                <button type="submit" id="btn-player-action" class="bg-[#00f0ff] text-black px-4 py-2 font-bold rounded">Guardar</button>
+            </form>
+        </section>
+
+        <!-- Form Asignar Puntos -->
+        <section class="neon-box-purple p-6 rounded-xl">
+            <h3 class="text-xl mb-4 text-[#b026ff]">Asignar Puntos</h3>
+            <form id="formPuntos" class="flex flex-col gap-4">
+                <select id="pt-jugador" class="bg-gray-800 p-2 rounded" required></select>
+                <select id="pt-puntos" class="bg-gray-800 p-2 rounded">
+                    <option value="1">1 Punto</option><option value="2">2 Puntos</option>
+                    <option value="3">3 Puntos</option><option value="4">4 Puntos</option>
+                </select>
+                <select id="pt-motivo" class="bg-gray-800 p-2 rounded">
+                    <option value="Multijugador">Multijugador</option><option value="Battle Royale">Battle Royale</option>
+                    <option value="Sala Interna">Sala Interna</option><option value="Scrims Competitiva">Scrims Competitiva</option>
+                    <option value="Guerra de Clanes">Guerra de Clanes</option><option value="Nuevo miembro">Nuevo miembro</option>
+                    <option value="Actividad consecutiva">Actividad consecutiva</option>
+                </select>
+                <button type="submit" class="bg-[#b026ff] text-white px-4 py-2 font-bold rounded">Enviar Puntos</button>
+            </form>
+        </section>
+
+        <!-- Nuevo Form: Reiniciar Evento -->
+        <section class="border border-red-500 bg-red-900 bg-opacity-20 p-6 rounded-xl">
+            <h3 class="text-xl mb-4 text-red-500 font-bold">Configuración del Evento (Zona de Peligro)</h3>
+            <p class="text-sm text-gray-300 mb-4">Al cambiar la fecha y reiniciar, <strong class="text-red-400">se borrarán todos los puntos actuales de la base de datos</strong>. Los jugadores se mantendrán guardados.</p>
+            <form id="formReset" class="flex flex-col md:flex-row gap-4">
+                <input type="datetime-local" id="new-event-date" required class="bg-gray-800 text-white p-2 rounded flex-1">
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 font-bold rounded hover:bg-red-700">Actualizar y Reiniciar Puntos</button>
+            </form>
+        </section>
+
+        <button onclick="cerrarAdmin()" class="block w-full text-center text-gray-500 border border-gray-600 p-2 hover:bg-gray-800">Volver a la Web Principal</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let jugadoresGlobal = [];
+        let eventDate = null;
+        let timerInterval = null;
+
+        // WebSockets
+        socket.on('update_needed', () => cargarDatos());
+        socket.on('timer_updated', (newDate) => iniciarContador(newDate));
+
+        // Inicialización
+        async function cargarDatos() {
+            const res = await fetch('/api/rankings');
+            jugadoresGlobal = await res.json();
+
+            pintarTablaGeneral();
+            pintarPodioGeneral();
+            pintarPodiosEspecificos();
+            actualizarSelectsAdmin();
+        }
+
+        async function inicializarFecha() {
+            const res = await fetch('/api/settings/event_date');
+            const data = await res.json();
+            iniciarContador(data.date);
+        }
+
+        function iniciarContador(dateString) {
+            if(!dateString) return;
+            if(timerInterval) clearInterval(timerInterval);
+
+            const countDate = new Date(dateString);
+
+            // Formatear texto del DOM
+            const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('cd-target-text').innerText = countDate.toLocaleDateString('es-ES', opciones).toUpperCase();
+
+            timerInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = countDate.getTime() - now;
+
+                if (distance < 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('cd-days').innerText = "00";
+                    document.getElementById('cd-hours').innerText = "00";
+                    document.getElementById('cd-minutes').innerText = "00";
+                    document.getElementById('cd-seconds').innerText = "00";
+                    return;
+                }
+
+                document.getElementById("cd-days").innerText = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                document.getElementById("cd-hours").innerText = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                document.getElementById("cd-minutes").innerText = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                document.getElementById("cd-seconds").innerText = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+            }, 1000);
+        }
+
+        function pintarTablaGeneral() {
+            const tbody = document.getElementById('tabla-general');
+            tbody.innerHTML = '';
+            jugadoresGlobal.forEach((j, i) => {
+                tbody.innerHTML += `<tr>
+                    <td class="p-2 border-b border-gray-800">#${i + 1}</td>
+                    <td class="p-2 border-b border-gray-800 font-bold">${j.nickname}</td>
+                    <td class="p-2 border-b border-gray-800 text-neon-cyan">${j.total_points}</td>
+                </tr>`;
+            });
+        }
+
+        function pintarPodioGeneral() {
+            const podio = document.getElementById('podio-general');
+            podio.innerHTML = '';
+            const top3 = jugadoresGlobal.slice(0, 3);
+            if(top3.length === 0) return;
+
+            const orden = [
+                { pos: 2, obj: top3[1], height: 'h-32', bg: 'bg-gray-400' },
+                { pos: 1, obj: top3[0], height: 'h-40', bg: 'bg-[#ffcc00]' },
+                { pos: 3, obj: top3[2], height: 'h-24', bg: 'bg-[#cd7f32]' }
+            ];
+
+            orden.forEach(i => {
+                if(i.obj) {
+                    podio.innerHTML += `<div class="flex flex-col items-center w-1/4">
+                        <div class="font-bold text-lg truncate w-full text-center">${i.obj.nickname}</div>
+                        <div class="text-[#00f0ff] mb-2">${i.obj.total_points} PTS</div>
+                        <div class="w-full ${i.height} ${i.bg} flex justify-center items-center text-black font-black text-2xl rounded-t-lg shadow-lg">#${i.pos}</div>
+                    </div>`;
+                }
+            });
+        }
+
+        function pintarPodiosEspecificos() {
+            const topMj = [...jugadoresGlobal].sort((a,b) => b.mj_points - a.mj_points)[0];
+            document.getElementById('podio-mj').innerHTML = topMj && topMj.mj_points > 0
+                ? `<span class="text-3xl font-bold">${topMj.nickname}</span><br><span class="text-[#00f0ff]">${topMj.mj_points} Pts</span>` : 'Sin registros';
+
+            const topBr = [...jugadoresGlobal].sort((a,b) => b.br_points - a.br_points)[0];
+            document.getElementById('podio-br').innerHTML = topBr && topBr.br_points > 0
+                ? `<span class="text-3xl font-bold">${topBr.nickname}</span><br><span class="text-[#00f0ff]">${topBr.br_points} Pts</span>` : 'Sin registros';
+        }
+
+        // Lógica Administrativa
+        async function checkAdmin() {
+            const res = await fetch('/api/admin-login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ password: document.getElementById('admin-pass').value })
+            });
+
+            if(res.ok) {
+                document.getElementById('modal-login').classList.add('hidden');
+                document.getElementById('main-view').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                document.getElementById('admin-pass').value = '';
+            } else {
+                alert('Contraseña incorrecta');
+            }
+        }
+
+        function cerrarAdmin() {
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('main-view').classList.remove('hidden');
+        }
+
+        function actualizarSelectsAdmin() {
+            const selects = ['pt-jugador', 'select-edit-player'];
+            selects.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.innerHTML = '<option value="">Selecciona un jugador...</option>';
+                    jugadoresGlobal.forEach(j => { el.innerHTML += `<option value="${j.id}">${j.nickname}</option>`; });
+                }
+            });
+        }
+
+        function togglePlayerForm() {
+            const mode = document.getElementById('action-mode').value;
+            const selectPlayer = document.getElementById('select-edit-player');
+            const nickInput = document.getElementById('p-nick');
+            const genInput = document.getElementById('p-gen');
+            const idInput = document.getElementById('p-id');
+            const btn = document.getElementById('btn-player-action');
+
+            document.getElementById('formJugador').reset();
+
+            if (mode === 'add') {
+                selectPlayer.classList.add('hidden');
+                nickInput.classList.remove('hidden'); genInput.classList.remove('hidden'); idInput.classList.remove('hidden');
+                btn.innerText = 'Guardar'; btn.className = 'bg-[#00f0ff] text-black px-4 py-2 font-bold rounded';
+            } else if (mode === 'edit') {
+                selectPlayer.classList.remove('hidden');
+                nickInput.classList.remove('hidden'); genInput.classList.remove('hidden'); idInput.classList.remove('hidden');
+                btn.innerText = 'Actualizar'; btn.className = 'bg-yellow-500 text-black px-4 py-2 font-bold rounded';
+            } else {
+                selectPlayer.classList.remove('hidden');
+                nickInput.classList.add('hidden'); genInput.classList.add('hidden'); idInput.classList.add('hidden');
+                btn.innerText = 'Eliminar'; btn.className = 'bg-red-500 text-white px-4 py-2 font-bold rounded';
+            }
+        }
+
+        function fillPlayerData() {
+            const playerId = document.getElementById('select-edit-player').value;
+            if(!playerId) return;
+            const player = jugadoresGlobal.find(j => j.id == playerId);
+            if(player) {
+                document.getElementById('p-nick').value = player.nickname;
+                document.getElementById('p-gen').value = player.gender;
+                document.getElementById('p-id').value = player.in_game_id;
+            }
+        }
+
+        // Submits
+        document.getElementById('formJugador').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const mode = document.getElementById('action-mode').value;
+            const playerId = document.getElementById('select-edit-player').value;
+
+            const payload = {
+                nickname: document.getElementById('p-nick').value,
+                gender: document.getElementById('p-gen').value,
+                in_game_id: document.getElementById('p-id').value
+            };
+
+            let url = '/api/players';
+            let method = 'POST';
+
+            if (mode === 'edit') {
+                if(!playerId) return alert("Selecciona un jugador");
+                url = `/api/players/${playerId}`;
+                method = 'PUT';
+            } else if (mode === 'delete') {
+                if(!playerId) return alert("Selecciona un jugador");
+                if(!confirm("¿Seguro que deseas eliminar este jugador y todos sus puntos?")) return;
+                url = `/api/players/${playerId}`;
+                method = 'DELETE';
+            }
+
+            await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            document.getElementById('formJugador').reset();
+            togglePlayerForm(); // Restaurar UI al estado correcto
+        });
+
+        document.getElementById('formPuntos').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const selectMotivo = document.getElementById('pt-motivo');
+            await fetch('/api/points', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    player_id: document.getElementById('pt-jugador').value,
+                    points: document.getElementById('pt-puntos').value,
+                    category: selectMotivo.value,
+                    reason: selectMotivo.options[selectMotivo.selectedIndex].text
+                })
+            });
+            document.getElementById('formPuntos').reset();
+        });
+
+        document.getElementById('formReset').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newDate = document.getElementById('new-event-date').value;
+            if(confirm("¡ATENCIÓN! Esto borrará permanentemente todos los puntos acumulados de los jugadores en la base de datos local. ¿Continuar?")) {
+                await fetch('/api/settings/reset_event', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ new_date: newDate })
+                });
+                alert("Evento reiniciado con éxito.");
+                document.getElementById('formReset').reset();
+            }
+        });
+
+        cargarDatos();
+        inicializarFecha();
+    </script>
+</body>
+</html>
