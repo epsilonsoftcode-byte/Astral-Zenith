@@ -19,6 +19,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 db.serialize(() => {
+    // Tabla de Jugadores
     db.run(`CREATE TABLE IF NOT EXISTS players (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nickname TEXT UNIQUE,
@@ -26,12 +27,14 @@ db.serialize(() => {
         in_game_id TEXT
     )`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS points (
+    // NUEVA TABLA: Registro de Partidas, Kills y Fechas para el PDF
+    db.run(`CREATE TABLE IF NOT EXISTS match_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         player_id INTEGER,
-        points INTEGER,
         category TEXT,
-        reason TEXT,
+        points INTEGER,
+        kills INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(player_id) REFERENCES players(id)
     )`);
 
@@ -51,11 +54,11 @@ app.get('/api/settings/event_date', (req, res) => {
     });
 });
 
-// Reiniciar evento
+// Reiniciar evento (Borra historial de puntos y actualiza fecha)
 app.post('/api/settings/reset_event', (req, res) => {
     const { new_date } = req.body;
     db.serialize(() => {
-        db.run(`DELETE FROM points`, (err) => {
+        db.run(`DELETE FROM match_records`, (err) => {
             if (err) return res.status(500).json({ error: err.message });
         });
         db.run(`UPDATE settings SET value = ? WHERE key = 'event_end'`, [new_date], (err) => {
@@ -67,64 +70,80 @@ app.post('/api/settings/reset_event', (req, res) => {
     });
 });
 
+// Enviar Rankings (Suma general y Kills separadas)
 app.get('/api/rankings', (req, res) => {
     const query = `
-    SELECT p.id, p.nickname, p.gender, p.in_game_id,
-    COALESCE(SUM(pt.points), 0) as total_points,
-        COALESCE(SUM(CASE WHEN pt.category = 'Battle Royale' THEN pt.points ELSE 0 END), 0) as br_points,
-        COALESCE(SUM(CASE WHEN pt.category = 'Multijugador' THEN pt.points ELSE 0 END), 0) as mj_points
+        SELECT p.id, p.nickname, p.gender, p.in_game_id,
+               COALESCE(SUM(m.points), 0) as total_points,
+               COALESCE(SUM(CASE WHEN m.category = 'Battle Royale' THEN m.kills ELSE 0 END), 0) as br_kills,
+               COALESCE(SUM(CASE WHEN m.category = 'Multijugador' THEN m.kills ELSE 0 END), 0) as mj_kills
         FROM players p
-        LEFT JOIN points pt ON p.id = pt.player_id
+        LEFT JOIN match_records m ON p.id = m.player_id
         GROUP BY p.id
         ORDER BY total_points DESC
-        `;
-        db.all(query, [], (err, rows) => {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json(rows);
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// Insertar Partida/Puntos (Automático)
+app.post('/api/matches', (req, res) => {
+    const { player_id, category, points, kills } = req.body;
+    db.run(`INSERT INTO match_records (player_id, category, points, kills) VALUES (?, ?, ?, ?)`,
+        [player_id, category, points, kills || 0], function (err) {
+            if (err) return res.status(400).json({ error: err.message });
+            io.emit('update_needed');
+            res.json({ success: true });
         });
+});
+
+// Extraer Datos para el PDF (Historial completo)
+app.get('/api/reports', (req, res) => {
+    const query = `
+        SELECT p.nickname, m.category, m.points, m.kills, m.created_at
+        FROM match_records m
+        JOIN players p ON p.id = m.player_id
+        ORDER BY m.created_at DESC
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
 });
 
 // CRUD Jugadores
 app.post('/api/players', (req, res) => {
     const { nickname, gender, in_game_id } = req.body;
     db.run(`INSERT INTO players (nickname, gender, in_game_id) VALUES (?, ?, ?)`,
-           [nickname, gender, in_game_id], function(err) {
-               if (err) return res.status(400).json({ error: err.message });
-               io.emit('update_needed');
-               res.json({ id: this.lastID, success: true });
-           });
+        [nickname, gender, in_game_id], function (err) {
+            if (err) return res.status(400).json({ error: err.message });
+            io.emit('update_needed');
+            res.json({ id: this.lastID, success: true });
+        });
 });
 
 app.put('/api/players/:id', (req, res) => {
     const { nickname, gender, in_game_id } = req.body;
     db.run(`UPDATE players SET nickname = ?, gender = ?, in_game_id = ? WHERE id = ?`,
-           [nickname, gender, in_game_id, req.params.id], function(err) {
-               if (err) return res.status(400).json({ error: err.message });
-               io.emit('update_needed');
-               res.json({ success: true });
-           });
+        [nickname, gender, in_game_id, req.params.id], function (err) {
+            if (err) return res.status(400).json({ error: err.message });
+            io.emit('update_needed');
+            res.json({ success: true });
+        });
 });
 
 app.delete('/api/players/:id', (req, res) => {
     const id = req.params.id;
     db.serialize(() => {
-        db.run(`DELETE FROM points WHERE player_id = ?`, [id]);
-        db.run(`DELETE FROM players WHERE id = ?`, [id], function(err) {
+        db.run(`DELETE FROM match_records WHERE player_id = ?`, [id]);
+        db.run(`DELETE FROM players WHERE id = ?`, [id], function (err) {
             if (err) return res.status(400).json({ error: err.message });
             io.emit('update_needed');
             res.json({ success: true });
         });
     });
-});
-
-app.post('/api/points', (req, res) => {
-    const { player_id, points, category, reason } = req.body;
-    db.run(`INSERT INTO points (player_id, points, category, reason) VALUES (?, ?, ?, ?)`,
-           [player_id, points, category, reason], function(err) {
-               if (err) return res.status(400).json({ error: err.message });
-               io.emit('update_needed');
-               res.json({ success: true });
-           });
 });
 
 // Autenticación de Admin

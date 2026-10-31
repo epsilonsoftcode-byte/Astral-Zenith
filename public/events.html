@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astral Zenith - Eventos y Dinámicas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'az-gold': '#c5a059',
+                        'az-gold-light': '#e6c875',
+                        'az-silver': '#a0aab2',
+                        'az-dark': '#050505',
+                        'az-panel': '#0a0a0c'
+                    },
+                    fontFamily: {
+                        'cinzel': ['Cinzel', 'serif'],
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050505;
+            color: #e2e8f0;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+        }
+
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            background: radial-gradient(circle at center, #111115 0%, #050505 100%);
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-title {
+            font-family: 'Cinzel', serif;
+        }
+
+        .text-gradient-gold {
+            background: linear-gradient(to right, #c5a059, #e6c875, #c5a059);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .active-nav {
+            background: #c5a059;
+            color: #000;
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.6);
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(10, 10, 12, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s ease;
+        }
+
+        /* Efectos Neón del Flyer */
+        .glow-blue {
+            border-top: 4px solid #3b82f6;
+        }
+
+        .glow-blue:hover {
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .glow-orange {
+            border-top: 4px solid #f97316;
+        }
+
+        .glow-orange:hover {
+            box-shadow: 0 0 40px rgba(249, 115, 22, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .glow-purple {
+            border-top: 4px solid #a855f7;
+        }
+
+        .glow-purple:hover {
+            box-shadow: 0 0 40px rgba(168, 85, 247, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .glow-prize {
+            border: 2px solid #c5a059;
+            box-shadow: 0 0 25px rgba(197, 160, 89, 0.2);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen pt-24">
+
+    <!-- Fondo Animado -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Navegación Fija -->
+    <nav
+        class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-az-gold/25 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="font-title font-bold text-xl text-az-gold tracking-widest">AZ</div>
+            <div class="hidden md:flex gap-8">
+                <a href="/"
+                    class="text-gray-400 hover:text-az-gold-light transition duration-300 tracking-widest text-sm uppercase">El
+                    Clan</a>
+                <a href="/admins.html"
+                    class="text-gray-400 hover:text-az-gold-light transition duration-300 tracking-widest text-sm uppercase">Staff</a>
+                <a href="/events.html" class="text-az-gold font-bold tracking-widest text-sm uppercase">Eventos</a>
+                <a href="/rankings.html"
+                    class="text-gray-400 hover:text-az-gold-light transition duration-300 tracking-widest text-sm uppercase">Rankings</a>
+            </div>
+            <button class="md:hidden text-az-gold font-bold">Menú</button>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal: El Evento -->
+    <main class="max-w-6xl mx-auto w-full px-4 flex-grow py-8 space-y-16">
+
+        <!-- CABECERA DEL EVENTO -->
+        <header class="text-center space-y-6 reveal">
+            <h1
+                class="text-6xl md:text-8xl font-black italic tracking-wider text-blue-500 drop-shadow-[0_0_25px_rgba(59,130,246,0.6)]">
+                ¡DINÁMICA!
+            </h1>
+            <h2 class="text-2xl md:text-4xl font-bold font-title text-az-gold tracking-widest">
+                ¡QUE COMIENCE LA BATALLA!
+            </h2>
+            <div
+                class="inline-block border border-az-gold text-az-gold px-6 py-2 rounded-full uppercase tracking-[0.2em] text-sm font-bold shadow-[0_0_15px_rgba(197,160,89,0.3)]">
+                👑 ¡Solo los más fuertes dejan huella!
+            </div>
+        </header>
+
+        <!-- DESCRIPCIÓN Y MODALIDAD -->
+        <section class="max-w-4xl mx-auto text-center reveal">
+            <div class="glass-panel p-8 md:p-10 rounded-2xl relative overflow-hidden">
+                <div class="absolute -left-10 -top-10 w-32 h-32 bg-blue-500 opacity-20 blur-3xl rounded-full"></div>
+                <p class="text-lg md:text-xl text-gray-300 leading-relaxed font-light mb-8">
+                    Demuestra que tienes lo necesario para ser el más fuerte. En nuestra dinámica de <strong
+                        class="text-az-gold-light">MULTIJUGADOR</strong>, la estrategia, el trabajo en equipo y la
+                    habilidad serán clave.
+                </p>
+                <div
+                    class="inline-flex flex-col md:flex-row items-center justify-center gap-4 bg-black/50 border border-gray-800 px-8 py-4 rounded-xl">
+                    <span class="text-3xl">👥</span>
+                    <div class="text-left text-center md:text-left">
+                        <span class="block text-gray-400 text-xs font-bold tracking-widest uppercase">Modalidad:</span>
+                        <span class="block text-2xl font-black text-az-gold tracking-wider">SALA INTERNA</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LAS 3 FASES (GRID) -->
+        <section class="reveal">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                <!-- Fase 1: Azul -->
+                <div
+                    class="glass-panel glow-blue p-8 rounded-xl relative overflow-hidden flex flex-col justify-between">
+                    <div class="text-8xl font-black text-blue-500/10 absolute -right-4 -bottom-4 font-title">1</div>
+                    <div>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div
+                                class="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-400 font-bold text-xl shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                                1</div>
+                            <h3 class="text-2xl font-black text-white italic tracking-wider leading-tight">BATALLA
+                                POR<br><span class="text-blue-400">EQUIPOS</span></h3>
+                        </div>
+                        <p class="text-sm text-gray-400 font-light mt-6">Se formarán equipos que lucharán por la
+                            victoria.</p>
+                    </div>
+                    <p class="text-blue-300 font-bold text-sm mt-4 uppercase">Solo el equipo más fuerte se llevará el
+                        triunfo.</p>
+                </div>
+
+                <!-- Fase 2: Naranja -->
+                <div
+                    class="glass-panel glow-orange p-8 rounded-xl relative overflow-hidden flex flex-col justify-between">
+                    <div class="text-8xl font-black text-orange-500/10 absolute -right-4 -bottom-4 font-title">2</div>
+                    <div>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div
+                                class="w-12 h-12 rounded-full border-2 border-orange-500 flex items-center justify-center text-orange-400 font-bold text-xl shadow-[0_0_15px_rgba(249,115,22,0.5)]">
+                                2</div>
+                            <h3 class="text-2xl font-black text-white italic tracking-wider leading-tight">
+                                CONTRA<br><span class="text-orange-400">TODOS</span></h3>
+                        </div>
+                        <p class="text-sm text-gray-400 font-light mt-6">El equipo ganador tendrá que enfrentarse en un
+                            épico <strong class="text-orange-300">TODOS CONTRA TODOS</strong>.</p>
+                    </div>
+                    <p class="text-orange-300 font-bold text-sm mt-4 uppercase">Aquí se demuestra quién tiene el
+                        verdadero poder.</p>
+                </div>
+
+                <!-- Fase 3: Morado -->
+                <div
+                    class="glass-panel glow-purple p-8 rounded-xl relative overflow-hidden flex flex-col justify-between">
+                    <div class="text-8xl font-black text-purple-500/10 absolute -right-4 -bottom-4 font-title">3</div>
+                    <div>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div
+                                class="w-12 h-12 rounded-full border-2 border-purple-500 flex items-center justify-center text-purple-400 font-bold text-xl shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                                3</div>
+                            <h3 class="text-2xl font-black text-white italic tracking-wider leading-tight">PVP<br><span
+                                    class="text-purple-400">FINAL</span></h3>
+                        </div>
+                        <p class="text-sm text-gray-400 font-light mt-6">Los 2 mejores jugadores llegarán al
+                            enfrentamiento final en un PVP 1 VS 1.</p>
+                    </div>
+                    <p class="text-purple-300 font-bold text-sm mt-4 uppercase">¡Honor, habilidad y poder decidirán
+                        quién será la leyenda!</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- INFO BAR: FECHA, PREMIO Y HORA -->
+        <section class="reveal pt-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+
+                <!-- Fecha -->
+                <div
+                    class="glass-panel p-6 rounded-xl flex items-center justify-center gap-6 border-l-4 border-l-gray-300">
+                    <span class="text-5xl">📅</span>
+                    <div class="text-left">
+                        <span class="block text-xl font-bold tracking-widest text-gray-200">DOMINGO</span>
+                        <span class="block text-3xl font-black text-az-gold-light">1 NOVIEMBRE</span>
+                    </div>
+                </div>
+
+                <!-- Premio (Centro) -->
+                <div
+                    class="glass-panel glow-prize p-8 rounded-xl flex flex-col items-center justify-center transform md:scale-110 z-10 bg-black/80">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-3xl text-az-gold">🏆</span>
+                        <span class="text-xl font-bold tracking-widest text-az-gold">PREMIO</span>
+                    </div>
+                    <div
+                        class="text-5xl md:text-6xl font-black text-gradient-gold drop-shadow-[0_0_10px_rgba(197,160,89,0.5)]">
+                        2,500 <span class="text-3xl">CPs</span>
+                    </div>
+                </div>
+
+                <!-- Hora -->
+                <div
+                    class="glass-panel p-6 rounded-xl flex items-center justify-center gap-6 border-r-4 border-r-blue-500">
+                    <span class="text-5xl">🕒</span>
+                    <div class="text-left">
+                        <span class="block text-xl font-bold tracking-widest text-gray-200">HORA:</span>
+                        <span class="block text-3xl font-black text-blue-400">9:00 PM <span
+                                class="text-lg text-gray-400">(MX)</span></span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CALL TO ACTION FINAL -->
+        <section class="text-center py-12 reveal">
+            <div
+                class="inline-block bg-az-gold text-black font-black italic text-xl md:text-3xl px-8 py-4 uppercase tracking-wider transform -skew-x-12 shadow-[0_0_30px_rgba(197,160,89,0.4)]">
+                <span class="inline-block transform skew-x-12">¡Prepárate, reúne tu poder y demuestra de qué estás
+                    hecho!</span>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Pie de página -->
+    <footer class="border-t border-az-gold/20 bg-[#050505] py-10 text-center relative z-10 mt-16">
+        <div class="font-title text-2xl text-az-gold tracking-widest mb-4">ASTRAL ZENITH</div>
+        <div class="flex justify-center gap-6 mb-6">
+            <a href="https://wa.me/message/IYXWU4KN2TYUP1"
+                class="text-gray-500 hover:text-az-gold transition">WhatsApp</a>
+            <a href="https://www.instagram.com/az___esport?dlrf=MWhvamFuemV3MmhvOQ=="
+                class="text-gray-500 hover:text-az-gold transition">Instagram</a>
+            <a href="none" class="text-gray-500 hover:text-az-gold transition">Tiktok</a>
+        </div>
+        <p class="text-xs text-gray-600 tracking-widest">© 2026 ASTRAL ZENITH. DESARROLLADO POR EPSILON-AZ.</p>
+    </footer>
+
+    <!-- SCRIPT: Animaciones y Partículas -->
+    <script>
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 100;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal();
+
+        const canvas = document.getElementById("particles-canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray = [];
+        const numberOfParticles = 80;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * -0.5 - 0.1;
+                // Colores mezclados: Azul eléctrico, Naranja fuego, Oro.
+                const colors = ['rgba(59, 130, 246, 0.6)', 'rgba(249, 115, 22, 0.6)', 'rgba(197, 160, 89, 0.6)'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        window.addEventListener('resize', function () {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        });
+    </script>
+</body>
+
+</html>

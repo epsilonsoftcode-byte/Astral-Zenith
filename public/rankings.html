@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astral Zenith - Rankings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Librerías para exportar a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'az-gold': '#c5a059',
+                        'az-silver': '#a0aab2',
+                        'az-bronze': '#cd7f32',
+                    },
+                    fontFamily: {
+                        'cinzel': ['Cinzel', 'serif'],
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050505;
+            color: #e2e8f0;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+        }
+
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            background: radial-gradient(circle at center, #111115 0%, #050505 100%);
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-title {
+            font-family: 'Cinzel', serif;
+        }
+
+        .active-nav {
+            background: #c5a059;
+            color: #000;
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.6);
+        }
+
+        .glass-panel {
+            background: rgba(10, 10, 12, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #c5a059 #0a0a0c;
+        }
+
+        /* Efectos WOW del Top 3 */
+        .podium-1 {
+            border: 2px solid #c5a059;
+            box-shadow: 0 0 40px rgba(197, 160, 89, 0.4);
+            transform: scale(1.1);
+            z-index: 10;
+            background: linear-gradient(180deg, rgba(197, 160, 89, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+        }
+
+        .podium-2 {
+            border: 2px solid #a0aab2;
+            box-shadow: 0 0 25px rgba(160, 170, 178, 0.3);
+            background: linear-gradient(180deg, rgba(160, 170, 178, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+        }
+
+        .podium-3 {
+            border: 2px solid #cd7f32;
+            box-shadow: 0 0 25px rgba(205, 127, 50, 0.3);
+            background: linear-gradient(180deg, rgba(205, 127, 50, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+        }
+
+        .hidden-view {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen pt-24">
+
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Navegación Fija -->
+    <nav id="main-nav" class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-az-gold/25">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="font-title font-bold text-xl text-az-gold tracking-widest">AZ</div>
+            <div class="hidden md:flex gap-8">
+                <a href="/" class="text-gray-400 hover:text-az-gold transition tracking-widest text-sm uppercase">El
+                    Clan</a>
+                <a href="/admins.html"
+                    class="text-gray-400 hover:text-az-gold transition tracking-widest text-sm uppercase">Staff</a>
+                <a href="/events.html"
+                    class="text-gray-400 hover:text-az-gold transition tracking-widest text-sm uppercase">Eventos</a>
+                <a href="/rankings.html" class="text-az-gold font-bold tracking-widest text-sm uppercase">Rankings</a>
+            </div>
+            <button onclick="document.getElementById('modal-login').classList.remove('hidden-view')"
+                class="border border-gray-600 text-gray-400 hover:text-az-gold hover:border-az-gold px-4 py-1 rounded text-xs transition uppercase tracking-widest">Admin</button>
+        </div>
+    </nav>
+
+    <!-- VISTA PÚBLICA DE RANKINGS -->
+    <main id="main-view" class="max-w-7xl mx-auto w-full px-4 flex-grow py-8 space-y-16">
+
+        <header class="text-center space-y-4">
+            <h1
+                class="text-4xl md:text-5xl font-black font-title tracking-widest text-az-gold drop-shadow-[0_0_15px_rgba(197,160,89,0.5)]">
+                RANKING OFICIAL</h1>
+            <p class="text-az-silver uppercase tracking-[0.2em] font-light text-sm">Clasificación General y Kills en
+                Tiempo Real</p>
+        </header>
+
+        <!-- TOP 3 WOW -->
+        <section class="mb-16">
+            <h2 class="text-center text-xl tracking-[0.3em] font-light text-white uppercase mb-12">LA CÚSPIDE DEL CLAN
+            </h2>
+            <div id="podio-general"
+                class="flex flex-col md:flex-row justify-center items-end gap-6 md:gap-10 h-auto md:h-64 px-4">
+                <!-- Se inyecta dinámicamente -->
+            </div>
+        </section>
+
+        <!-- TABLAS DE PUNTOS Y KILLS -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- General Puntos -->
+            <div class="glass-panel p-6 rounded-xl flex flex-col h-[500px]">
+                <h3
+                    class="text-xl font-title text-az-gold tracking-widest mb-4 border-b border-az-gold/20 pb-2 text-center">
+                    RANKING GLOBAL (PTS)</h3>
+                <div class="table-container flex-grow">
+                    <table class="w-full text-left text-sm">
+                        <thead class="sticky top-0 bg-[#0a0a0c] z-10 text-gray-400">
+                            <tr>
+                                <th class="py-3 px-2">#</th>
+                                <th class="py-3 px-2">Jugador</th>
+                                <th class="py-3 px-2 text-right">Puntos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-general" class="divide-y divide-gray-800/50"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kills Battle Royale -->
+            <div class="glass-panel p-6 rounded-xl flex flex-col h-[500px]">
+                <h3
+                    class="text-xl font-title text-blue-400 tracking-widest mb-4 border-b border-blue-500/20 pb-2 text-center">
+                    TOP KILLS BATTLE ROYALE</h3>
+                <div class="table-container flex-grow">
+                    <table class="w-full text-left text-sm">
+                        <thead class="sticky top-0 bg-[#0a0a0c] z-10 text-gray-400">
+                            <tr>
+                                <th class="py-3 px-2">#</th>
+                                <th class="py-3 px-2">Jugador</th>
+                                <th class="py-3 px-2 text-right">Kills</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-kills-br" class="divide-y divide-gray-800/50"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kills Multijugador -->
+            <div class="glass-panel p-6 rounded-xl flex flex-col h-[500px]">
+                <h3
+                    class="text-xl font-title text-orange-400 tracking-widest mb-4 border-b border-orange-500/20 pb-2 text-center">
+                    TOP KILLS MULTIJUGADOR</h3>
+                <div class="table-container flex-grow">
+                    <table class="w-full text-left text-sm">
+                        <thead class="sticky top-0 bg-[#0a0a0c] z-10 text-gray-400">
+                            <tr>
+                                <th class="py-3 px-2">#</th>
+                                <th class="py-3 px-2">Jugador</th>
+                                <th class="py-3 px-2 text-right">Kills</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-kills-mj" class="divide-y divide-gray-800/50"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Modal Login -->
+    <div id="modal-login"
+        class="hidden-view fixed inset-0 bg-black/95 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+        <div
+            class="glass-panel border-az-gold p-8 rounded-xl text-center max-w-sm w-full shadow-[0_0_30px_rgba(197,160,89,0.2)]">
+            <h3 class="text-2xl font-title text-az-gold mb-6 tracking-widest">ACCESO CLASIFICADO</h3>
+            <input type="password" id="admin-pass" placeholder="Contraseña"
+                class="bg-black text-white p-3 w-full mb-6 rounded border border-gray-700 focus:border-az-gold outline-none tracking-widest text-center">
+            <button onclick="checkAdmin()"
+                class="bg-az-gold text-black font-bold uppercase tracking-widest px-6 py-3 rounded w-full mb-4 hover:bg-white transition">Entrar
+                al Sistema</button>
+            <button onclick="document.getElementById('modal-login').classList.add('hidden-view')"
+                class="text-xs tracking-widest text-gray-400 hover:text-white uppercase">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- PANEL ADMIN -->
+    <div id="admin-panel" class="hidden-view max-w-5xl mx-auto space-y-10 pb-16 pt-12 px-4">
+        <header class="text-center mb-12">
+            <h2
+                class="text-4xl font-black font-title text-az-gold tracking-widest drop-shadow-[0_0_15px_rgba(197,160,89,0.5)]">
+                PANEL DE MANDO</h2>
+            <p class="text-gray-400 tracking-widest mt-2 uppercase text-sm">Centro de Operaciones Astral Zenith</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Asignar Puntos (Ahora automático) -->
+            <section class="glass-panel p-8 rounded-xl border-az-gold/30">
+                <h3 class="text-xl mb-6 font-title text-az-gold tracking-widest border-b border-az-gold/20 pb-2">
+                    REGISTRAR PARTIDA</h3>
+                <form id="formPuntos" class="flex flex-col gap-5">
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase tracking-wider mb-1 block">Jugador</label>
+                        <select id="pt-jugador" class="bg-black p-3 rounded w-full border border-gray-700 text-white"
+                            required></select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase tracking-wider mb-1 block">Modalidad (Puntos
+                            automáticos)</label>
+                        <select id="pt-category" onchange="actualizarModoPuntos()"
+                            class="bg-black p-3 rounded w-full border border-gray-700 text-white" required>
+                            <option value="">Selecciona una sala...</option>
+                            <option value="Multijugador">Multijugador (Casual/Competitivo) [+1 pt]</option>
+                            <option value="Battle Royale">Battle Royale (Casual/Competitivo) [+1 pt]</option>
+                            <option value="Guerra de Clanes">Guerra de Clanes [+2 pts]</option>
+                            <option value="Dinamicas Internas">Dinámicas Internas [+2 pts]</option>
+                        </select>
+                    </div>
+
+                    <!-- Kills (Solo se habilita en BR y MJ) -->
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase tracking-wider mb-1 block">Kills (Opcional en
+                            Torneos)</label>
+                        <input type="number" id="pt-kills" placeholder="0"
+                            class="bg-black p-3 rounded w-full border border-gray-700 text-white focus:border-az-gold disabled:opacity-50"
+                            min="0" disabled>
+                    </div>
+
+                    <input type="hidden" id="pt-points-hidden" value="0">
+
+                    <button type="submit"
+                        class="bg-az-gold text-black px-4 py-3 font-bold rounded uppercase tracking-widest hover:bg-white transition mt-2">Registrar
+                        Actividad</button>
+                </form>
+            </section>
+
+            <div class="space-y-8">
+                <!-- Informes y Reportes PDF -->
+                <section class="glass-panel p-8 rounded-xl border-blue-500/30">
+                    <h3 class="text-xl mb-4 font-title text-blue-400 tracking-widest border-b border-blue-500/20 pb-2">
+                        INTELIGENCIA Y REPORTES</h3>
+                    <p class="text-sm text-gray-400 mb-6 font-light">Descarga un informe detallado con las fechas, salas
+                        jugadas, puntos de participación y kills totales de todo el clan.</p>
+                    <button onclick="descargarPDF()"
+                        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded uppercase tracking-widest transition flex items-center justify-center gap-3">
+                        <span>📄</span> Descargar Reporte PDF
+                    </button>
+                </section>
+
+                <!-- Gestión de Jugadores -->
+                <section class="glass-panel p-8 rounded-xl border-gray-600/30">
+                    <h3 class="text-xl mb-4 font-title text-gray-200 tracking-widest border-b border-gray-600/20 pb-2">
+                        GESTIÓN DE MIEMBROS</h3>
+                    <select id="action-mode" onchange="togglePlayerForm()"
+                        class="bg-black p-3 rounded w-full border border-gray-700 mb-4 text-sm text-white">
+                        <option value="add">Alta de Jugador</option>
+                        <option value="edit">Modificar Jugador</option>
+                        <option value="delete">Baja Definitiva</option>
+                    </select>
+                    <form id="formJugador" class="flex flex-col gap-4">
+                        <select id="select-edit-player" onchange="fillPlayerData()"
+                            class="hidden-view bg-black p-3 rounded border border-gray-700 text-white text-sm">
+                            <option value="">Selecciona...</option>
+                        </select>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" id="p-nick" placeholder="Nickname" required
+                                class="bg-black p-3 rounded border border-gray-700 text-white text-sm">
+                            <input type="text" id="p-id" placeholder="ID Juego" required
+                                class="bg-black p-3 rounded border border-gray-700 text-white text-sm">
+                        </div>
+                        <select id="p-gen" class="bg-black p-3 rounded border border-gray-700 text-white text-sm">
+                            <option>Hombre</option>
+                            <option>Mujer</option>
+                        </select>
+                        <button type="submit" id="btn-player-action"
+                            class="bg-gray-200 text-black py-3 font-bold rounded uppercase tracking-widest text-sm hover:bg-white transition">Guardar
+                            Miembro</button>
+                    </form>
+                </section>
+            </div>
+        </div>
+
+        <!-- Reiniciar Evento -->
+        <section class="border border-red-500 bg-red-900/20 p-8 rounded-xl mt-8">
+            <h3 class="text-xl mb-4 font-title text-red-500 tracking-widest">PROTOCOLOS DE REINICIO</h3>
+            <p class="text-sm text-gray-300 mb-6 font-light">Al cambiar la fecha y reiniciar, <strong
+                    class="text-red-400">se borrará permanentemente todo el historial de puntos y kills de la base de
+                    datos</strong>. Usa esto solo al inicio de una nueva temporada.</p>
+            <form id="formReset" class="flex flex-col md:flex-row gap-4">
+                <input type="datetime-local" id="new-event-date" required
+                    class="bg-black text-white p-3 rounded border border-red-800 flex-1 outline-none">
+                <button type="submit"
+                    class="bg-red-600 text-white px-8 py-3 font-bold rounded uppercase tracking-widest hover:bg-red-500 transition">Purgar
+                    Sistema</button>
+            </form>
+        </section>
+
+        <button onclick="cerrarAdmin()"
+            class="block w-full text-center text-gray-500 border border-gray-800 p-4 rounded hover:bg-black transition tracking-widest uppercase text-sm mt-8">Cerrar
+            Sesión / Volver a Rankings</button>
+    </div>
+
+    <!-- SCRIPT DE DATOS, SOCKET Y PDF -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let jugadoresGlobal = [];
+
+        socket.on('update_needed', () => cargarDatos());
+
+        async function cargarDatos() {
+            const res = await fetch('/api/rankings');
+            jugadoresGlobal = await res.json();
+            pintarTop3();
+            pintarTablaGeneral();
+            pintarTablasKills();
+            actualizarSelectsAdmin();
+        }
+
+        // DIBUJAR TOP 3 WOW
+        function pintarTop3() {
+            const podio = document.getElementById('podio-general');
+            podio.innerHTML = '';
+            const top = jugadoresGlobal.slice(0, 3);
+            if (top.length === 0) return;
+
+            // Estructura: 2do lugar (Izquierda), 1er lugar (Centro), 3er lugar (Derecha)
+            const orden = [
+                { pos: 2, obj: top[1], style: 'podium-2', color: 'text-az-silver', icon: '⚔️' },
+                { pos: 1, obj: top[0], style: 'podium-1', color: 'text-az-gold', icon: '👑' },
+                { pos: 3, obj: top[2], style: 'podium-3', color: 'text-az-bronze', icon: '🛡️' }
+            ];
+
+            orden.forEach(item => {
+                if (item.obj) {
+                    podio.innerHTML += `
+                    <div class="${item.style} flex flex-col items-center justify-center p-6 rounded-t-2xl w-full md:w-1/3 transition-all duration-500">
+                        <span class="text-3xl mb-2">${item.icon}</span>
+                        <h3 class="text-2xl font-black font-title tracking-wider ${item.color} truncate w-full text-center">${item.obj.nickname}</h3>
+                        <p class="text-white font-bold text-xl mt-2">${item.obj.total_points} PTS</p>
+                        <span class="text-xs uppercase tracking-[0.2em] ${item.color} mt-1">Lugar #${item.pos}</span>
+                    </div>`;
+                }
+            });
+        }
+
+        function pintarTablaGeneral() {
+            const tbody = document.getElementById('tabla-general');
+            tbody.innerHTML = '';
+            jugadoresGlobal.forEach((j, i) => {
+                tbody.innerHTML += `<tr class="hover:bg-gray-800/30 transition"><td class="py-4 px-2 font-bold text-gray-500">#${i + 1}</td><td class="py-4 px-2 font-bold text-white">${j.nickname}</td><td class="py-4 px-2 text-right text-az-gold font-bold">${j.total_points}</td></tr>`;
+            });
+        }
+
+        function pintarTablasKills() {
+            // Filtrar y ordenar Kills BR
+            const brKills = [...jugadoresGlobal].filter(j => j.br_kills > 0).sort((a, b) => b.br_kills - a.br_kills);
+            const tbodyBr = document.getElementById('tabla-kills-br');
+            tbodyBr.innerHTML = brKills.length > 0 ? '' : '<tr><td colspan="3" class="text-center py-4 text-gray-500">Sin bajas registradas</td></tr>';
+            brKills.forEach((j, i) => {
+                tbodyBr.innerHTML += `<tr class="hover:bg-gray-800/30 transition"><td class="py-4 px-2 font-bold text-gray-500">#${i + 1}</td><td class="py-4 px-2 font-bold text-white">${j.nickname}</td><td class="py-4 px-2 text-right text-blue-400 font-bold">${j.br_kills}</td></tr>`;
+            });
+
+            // Filtrar y ordenar Kills MJ
+            const mjKills = [...jugadoresGlobal].filter(j => j.mj_kills > 0).sort((a, b) => b.mj_kills - a.mj_kills);
+            const tbodyMj = document.getElementById('tabla-kills-mj');
+            tbodyMj.innerHTML = mjKills.length > 0 ? '' : '<tr><td colspan="3" class="text-center py-4 text-gray-500">Sin bajas registradas</td></tr>';
+            mjKills.forEach((j, i) => {
+                tbodyMj.innerHTML += `<tr class="hover:bg-gray-800/30 transition"><td class="py-4 px-2 font-bold text-gray-500">#${i + 1}</td><td class="py-4 px-2 font-bold text-white">${j.nickname}</td><td class="py-4 px-2 text-right text-orange-400 font-bold">${j.mj_kills}</td></tr>`;
+            });
+        }
+
+        // LÓGICA DE ASIGNACIÓN AUTOMÁTICA DE PUNTOS
+        function actualizarModoPuntos() {
+            const cat = document.getElementById('pt-category').value;
+            const ptsInput = document.getElementById('pt-points-hidden');
+            const killsInput = document.getElementById('pt-kills');
+
+            if (cat === 'Multijugador' || cat === 'Battle Royale') {
+                ptsInput.value = 1; // 1 punto por participar
+                killsInput.disabled = false;
+                killsInput.placeholder = "Cantidad de Kills (Opcional)";
+            } else if (cat === 'Guerra de Clanes' || cat === 'Dinamicas Internas') {
+                ptsInput.value = 2; // 2 puntos por participar
+                killsInput.value = '';
+                killsInput.disabled = true;
+                killsInput.placeholder = "No aplica kills aquí";
+            } else {
+                ptsInput.value = 0;
+                killsInput.disabled = true;
+            }
+        }
+
+        // ENVÍO DE PUNTOS
+        document.getElementById('formPuntos').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch('/api/matches', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    player_id: document.getElementById('pt-jugador').value,
+                    category: document.getElementById('pt-category').value,
+                    points: parseInt(document.getElementById('pt-points-hidden').value),
+                    kills: parseInt(document.getElementById('pt-kills').value) || 0
+                })
+            });
+            document.getElementById('formPuntos').reset();
+            actualizarModoPuntos();
+            alert("Actividad registrada con éxito.");
+        });
+
+        // DESCARGAR REPORTE PDF (Con jsPDF y AutoTable)
+        async function descargarPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Título
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(18);
+                doc.text("INFORME DE ACTIVIDAD - ASTRAL ZENITH", 14, 20);
+
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                doc.text("Fecha de generación: " + new Date().toLocaleDateString('es-MX'), 14, 28);
+
+                // Obtener datos crudos del backend
+                const res = await fetch('/api/reports');
+                const historial = await res.json();
+
+                if (historial.length === 0) {
+                    alert("No hay datos suficientes para generar un reporte.");
+                    return;
+                }
+
+                // Dar formato a los datos para la tabla
+                const tableData = historial.map(row => {
+                    const fechaF = new Date(row.created_at).toLocaleString('es-MX');
+                    return [fechaF, row.nickname, row.category, row.points, row.kills];
+                });
+
+                // Generar tabla
+                doc.autoTable({
+                    startY: 35,
+                    head: [['Fecha / Hora', 'Jugador', 'Sala Jugada', 'Pts Participación', 'Kills']],
+                    body: tableData,
+                    theme: 'grid',
+                    headStyles: { fillColor: [197, 160, 89], textColor: [0, 0, 0] } // Tonos dorados
+                });
+
+                // Guardar PDF
+                doc.save('Reporte_Astral_Zenith.pdf');
+            } catch (e) {
+                console.error(e);
+                alert("Hubo un error al generar el PDF.");
+            }
+        }
+
+        // LOGIN ADMIN Y NAVEGACIÓN
+        async function checkAdmin() {
+            const res = await fetch('/api/admin-login', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: document.getElementById('admin-pass').value })
+            });
+            if (res.ok) {
+                document.getElementById('modal-login').classList.add('hidden-view');
+                document.getElementById('main-view').classList.add('hidden-view');
+                document.getElementById('main-nav').classList.add('hidden-view');
+                document.getElementById('admin-panel').classList.remove('hidden-view');
+                document.getElementById('admin-pass').value = '';
+            } else { alert('Contraseña incorrecta'); }
+        }
+
+        function cerrarAdmin() {
+            document.getElementById('admin-panel').classList.add('hidden-view');
+            document.getElementById('main-view').classList.remove('hidden-view');
+            document.getElementById('main-nav').classList.remove('hidden-view');
+        }
+
+        // UTILIDADES CRUD JUGADORES
+        function actualizarSelectsAdmin() {
+            const selects = ['pt-jugador', 'select-edit-player'];
+            selects.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.innerHTML = '<option value="">Selecciona al jugador...</option>'; jugadoresGlobal.forEach(j => { el.innerHTML += `<option value="${j.id}">${j.nickname}</option>`; }); }
+            });
+        }
+
+        function togglePlayerForm() {
+            const mode = document.getElementById('action-mode').value;
+            const selectPlayer = document.getElementById('select-edit-player');
+            const btn = document.getElementById('btn-player-action');
+            document.getElementById('formJugador').reset();
+
+            if (mode === 'add') { selectPlayer.classList.add('hidden-view'); btn.innerText = 'Guardar Miembro'; btn.className = 'bg-gray-200 text-black py-3 font-bold rounded uppercase text-sm hover:bg-white transition'; }
+            else if (mode === 'edit') { selectPlayer.classList.remove('hidden-view'); btn.innerText = 'Actualizar Datos'; btn.className = 'bg-blue-600 text-white py-3 font-bold rounded uppercase text-sm hover:bg-blue-500 transition'; }
+            else { selectPlayer.classList.remove('hidden-view'); btn.innerText = 'Dar de Baja Definitiva'; btn.className = 'bg-red-600 text-white py-3 font-bold rounded uppercase text-sm hover:bg-red-500 transition'; }
+        }
+
+        function fillPlayerData() {
+            const playerId = document.getElementById('select-edit-player').value;
+            if (!playerId) return;
+            const player = jugadoresGlobal.find(j => j.id == playerId);
+            if (player) { document.getElementById('p-nick').value = player.nickname; document.getElementById('p-gen').value = player.gender; document.getElementById('p-id').value = player.in_game_id; }
+        }
+
+        document.getElementById('formJugador').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const mode = document.getElementById('action-mode').value;
+            const playerId = document.getElementById('select-edit-player').value;
+            const payload = { nickname: document.getElementById('p-nick').value, gender: document.getElementById('p-gen').value, in_game_id: document.getElementById('p-id').value };
+            let url = '/api/players'; let method = 'POST';
+
+            if (mode === 'edit') { url = `/api/players/${playerId}`; method = 'PUT'; }
+            else if (mode === 'delete') { if (!confirm("¿Seguro que deseas eliminar este jugador de la base de datos?")) return; url = `/api/players/${playerId}`; method = 'DELETE'; }
+
+            await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            document.getElementById('formJugador').reset(); togglePlayerForm(); alert("Comando ejecutado con éxito.");
+        });
+
+        document.getElementById('formReset').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (confirm("⚠ ADVERTENCIA MÁXIMA ⚠\nEstás a punto de borrar todos los puntos y kills de la temporada. ¿Confirmar purga del sistema?")) {
+                await fetch('/api/settings/reset_event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ new_date: document.getElementById('new-event-date').value }) });
+                alert("Purga completada. Sistema en cero."); document.getElementById('formReset').reset();
+            }
+        });
+
+        // INICIALIZADOR DEL CANVAS (Polvo de Estrellas)
+        const canvas = document.getElementById("particles-canvas"); const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let particlesArray = [];
+        class Particle {
+            constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.size = Math.random() * 2; this.speedX = Math.random() * 0.5 - 0.25; this.speedY = Math.random() * -0.5 - 0.1; this.color = Math.random() > 0.5 ? 'rgba(197, 160, 89, 0.6)' : 'rgba(160, 170, 178, 0.4)'; }
+            update() { this.x += this.speedX; this.y += this.speedY; if (this.y < 0) { this.y = canvas.height; this.x = Math.random() * canvas.width; } }
+            draw() { ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
+        }
+        for (let i = 0; i < 80; i++) particlesArray.push(new Particle());
+        function animateParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particlesArray.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animateParticles); }
+        animateParticles();
+        window.addEventListener('resize', function () { canvas.width = window.innerWidth; canvas.height = window.innerHeight; particlesArray = []; for (let i = 0; i < 80; i++) particlesArray.push(new Particle()); });
+
+        cargarDatos();
+    </script>
+</body>
+
+</html>
